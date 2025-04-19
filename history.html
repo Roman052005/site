@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Історія гітар</title>
+    <link rel="stylesheet" href="StyleSheet.css">
+</head>
+<body>
+    <header>
+        <h1>Історія гітар</h1>
+        <nav>
+            <a href="index.html">Головна</a> |
+            <a href="news.html">Новини</a> |
+            <a href="guitarists.html">Гітаристи</a> |
+            <a href="Login.html" id="loginLink">Вхід</a> |
+            <a href="register.html">Реєстрація</a> |
+            <a href="admin.html" id="adminLink">Адмін-панель</a>
+        </nav>
+    </header>
+    <main>
+        <div id="historyList"></div>
+    </main>
+    <script src="js/script.js"></script>
+    <script>
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            document.getElementById('loginLink').innerHTML = `Вітаємо, ${localStorage.getItem('username')} | <a href="#" onclick="logout()">Вихід</a>`;
+            document.getElementById('adminLink').style.display = localStorage.getItem('role') === 'admin' ? 'inline' : 'none';
+        }
+
+        async function loadHistory() {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+            const historyList = document.getElementById('historyList');
+            data.history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+              <h2>${item.title}</h2>
+              <p>${item.content}</p>
+              <small>Автор: ${item.author.username} | ${new Date(item.createdAt).toLocaleString()}</small>`;
+                historyList.appendChild(div);
+            });
+        }
+        loadHistory();
+    </script>
+</body>
+</html>

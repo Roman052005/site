@@ -1,0 +1,136 @@
+/* Базові стилі */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    color: #fff;
+}
+
+h2 {
+    color: #333;
+    margin-top: 20px;
+}
+
+nav {
+    margin-top: 10px;
+}
+
+    nav a {
+        color: #fff;
+        text-decoration: none;
+        margin-right: 15px;
+        font-size: 16px;
+    }
+
+        nav a:hover {
+            text-decoration: underline;
+            color: #007BFF;
+        }
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #666;
+}
+
+/* Стилі для форм */
+.auth-form, .admin-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 500px;
+    margin: 20px 0;
+}
+
+    .auth-form label, .admin-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+/* Стилі для контенту */
+.news-item, .history-item, .guitarist-item, .admin-item {
+    background: #fff;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+    .news-item h2, .history-item h2, .guitarist-item h2, .admin-item h3 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .news-item p, .history-item p, .guitarist-item p, .admin-item p {
+        margin: 10px 0;
+    }
+
+small {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    nav a {
+        display: block;
+        margin: 10px 0;
+    }
+
+    .auth-form, .admin-form {
+        max-width: 100%;
+    }
+
+    header {
+        padding: 10px;
+    }
+}

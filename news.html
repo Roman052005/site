@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новини</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Новини клубу</h1>
+        <nav>
+            <a href="index.html">Головна</a> |
+            <a href="history.html">Історія гітар</a> |
+            <a href="guitarists.html">Гітаристи</a> |
+            <a href="login.html" id="loginLink">Вхід</a> |
+            <a href="register.html">Реєстрація</a> |
+            <a href="admin.html" id="adminLink">Адмін-панель</a>
+        </nav>
+    </header>
+    <main>
+        <div id="newsList"></div>
+        <div id="commentSection" style="display: none;">
+            <h2>Додати коментар</h2>
+            <form id="commentForm">
+                <textarea id="commentText" placeholder="Ваш коментар" required></textarea>
+                <button type="submit">Надіслати</button>
+            </form>
+        </div>
+    </main>
+    <script src="js/script.js"></script>
+    <script>
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      document.getElementById('commentSection').style.display = 'block';
+      document.getElementById('loginLink').innerHTML = `Вітаємо, ${localStorage.getItem('username')} | <a href="#" onclick="logout()">Вихід</a>`;
+      document.getElementById('adminLink').style.display = localStorage.getItem('role') === 'admin' ? 'inline' : 'none';
+    }
+
+    async function loadNews() {
+      const response = await fetch('/api/news');
+      const data = await response.json();
+      const newsList = document.getElementById('newsList');
+      data.news.forEach(async (item) => {
+        const div = document.createElement('div');
+        div.className = 'news-item';
+        div.innerHTML = `
+          <h2>${item.title}</h2>
+          <p>${item.content}</p>
+          <small>Автор: ${item.author.username} | ${new Date(item.createdAt).toLocaleString()}</small>
+          <div id="comments-${item._id}"></div>`;
+        newsList.appendChild(div);
+        const commentsResponse = await fetch(`/api/comments/${item._id}`);
+        const commentsData = await commentsResponse.json();
+        const commentsDiv = document.getElementById(`comments-${item._id}`);
+        commentsData.comments.forEach(comment => {
+          const p = document.createElement('p');
+          p.innerHTML = `<strong>${comment.userId.username}:</strong> ${comment.text} <small>(${new Date(comment.createdAt).toLocaleString()})</small>`;
+          commentsDiv.appendChild(p);
+        });
+        if (userId) {
+          const form = document.getElementById('commentForm');
+          form.onsubmit = async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('commentText').value;
+            await fetch('/api/comments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ newsId: item._id, text, userId })
+            });
+            location.reload();
+          };
+        }
+      });
+    }
+    loadNews();
+    </script>
+</body>
+</html>

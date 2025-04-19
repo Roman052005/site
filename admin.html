@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Адмін-панель</h1>
+        <nav>
+            <a href="index.html">Головна</a> |
+            <a href="news.html">Новини</a> |
+            <a href="history.html">Історія гітар</a> |
+            <a href="guitarists.html">Гітаристи</a> |
+            <a href="#" onclick="logout()">Вихід</a>
+        </nav>
+    </header>
+    <main>
+        <section id="adminContent">
+            <h2>Управління користувачами</h2>
+            <div id="usersList"></div>
+
+            <h2>Управління новинами</h2>
+            <form id="addNewsForm" class="admin-form">
+                <input type="text" id="newsTitle" placeholder="Заголовок новини" required>
+                <textarea id="newsContent" placeholder="Текст новини" required></textarea>
+                <button type="submit">Додати новину</button>
+            </form>
+            <div id="newsList"></div>
+
+            <h2>Управління історією гітар</h2>
+            <form id="addHistoryForm" class="admin-form">
+                <input type="text" id="historyTitle" placeholder="Заголовок історії" required>
+                <textarea id="historyContent" placeholder="Текст історії" required></textarea>
+                <button type="submit">Додати історію</button>
+            </form>
+            <div id="historyList"></div>
+
+            <h2>Управління гітаристами</h2>
+            <form id="addGuitaristForm" class="admin-form">
+                <input type="text" id="guitaristName" placeholder="Ім'я гітариста" required>
+                <textarea id="guitaristBio" placeholder="Біографія" required></textarea>
+                <button type="submit">Додати гітариста</button>
+            </form>
+            <div id="guitaristsList"></div>
+
+            <h2>Управління коментарями</h2>
+            <div id="commentsList"></div>
+        </section>
+    </main>
+    <script src="js/script.js"></script>
+    <script>
+    const userId = localStorage.getItem('userId');
+    const role = localStorage.getItem('role');
+    if (!userId || role !== 'admin') {
+      alert('Доступ заборонено! Увійдіть як адміністратор.');
+      window.location.href = 'login.html';
+    }
+
+    // UC3, UC4: Управління користувачами
+    async function loadUsers() {
+      const response = await fetch(`/api/users?userId=${userId}`);
+      const data = await response.json();
+      if (data.status === 'error') return alert(data.message);
+      const usersList = document.getElementById('usersList');
+      data.users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.innerHTML = `
+          <p>${user.username} (${user.email}) - Роль: ${user.role} | Останній вхід: ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Немає'}</p>
+          <button onclick="changeRole('${user._id}', '${user.role === 'admin' ? 'user' : 'admin'}')">Змінити роль</button>
+          <button onclick="deleteUser('${user._id}')">Видалити</button>`;
+        usersList.appendChild(div);
+      });
+    }
+
+    async function changeRole(id, newRole) {
+      const response = await fetch(`/api/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role: newRole })
+      });
+      const result = await response.json();
+      if (result.status === 'success') location.reload();
+      else alert(result.message);
+    }
+
+    async function deleteUser(id) {
+      if (confirm('Ви впевнені, що хочете видалити цього користувача?')) {
+        const response = await fetch(`/api/users/${id}?userId=${userId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    // UC6-UC8: Управління новинами
+    async function loadNews() {
+      const response = await fetch('/api/news');
+      const data = await response.json();
+      const newsList = document.getElementById('newsList');
+      data.news.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.innerHTML = `
+          <h3>${item.title}</h3>
+          <p>${item.content}</p>
+          <small>Автор: ${item.author.username} | ${new Date(item.createdAt).toLocaleString()}</small>
+          <button onclick="editNews('${item._id}', '${item.title}', '${item.content}')">Редагувати</button>
+          <button onclick="deleteNews('${item._id}')">Видалити</button>`;
+        newsList.appendChild(div);
+      });
+    }
+
+    document.getElementById('addNewsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('newsTitle').value;
+      const content = document.getElementById('newsContent').value;
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, userId })
+      });
+      const result = await response.json();
+      if (result.status === 'success') location.reload();
+      else alert(result.message);
+    });
+
+    async function editNews(id, title, content) {
+      const newTitle = prompt('Новий заголовок:', title);
+      const newContent = prompt('Новий контент:', content);
+      if (newTitle && newContent) {
+        const response = await fetch(`/api/news/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, title: newTitle, content: newContent })
+        });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    async function deleteNews(id) {
+      if (confirm('Ви впевнені, що хочете видалити цю новину?')) {
+        const response = await fetch(`/api/news/${id}?userId=${userId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    // UC10-UC12: Управління історією
+    async function loadHistory() {
+      const response = await fetch('/api/history');
+      const data = await response.json();
+      const historyList = document.getElementById('historyList');
+      data.history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.innerHTML = `
+          <h3>${item.title}</h3>
+          <p>${item.content}</p>
+          <small>Автор: ${item.author.username} | ${new Date(item.createdAt).toLocaleString()}</small>
+          <button onclick="editHistory('${item._id}', '${item.title}', '${item.content}')">Редагувати</button>
+          <button onclick="deleteHistory('${item._id}')">Видалити</button>`;
+        historyList.appendChild(div);
+      });
+    }
+
+    document.getElementById('addHistoryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('historyTitle').value;
+      const content = document.getElementById('historyContent').value;
+      const response = await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content, userId })
+      });
+      const result = await response.json();
+      if (result.status === 'success') location.reload();
+      else alert(result.message);
+    });
+
+    async function editHistory(id, title, content) {
+      const newTitle = prompt('Новий заголовок:', title);
+      const newContent = prompt('Новий контент:', content);
+      if (newTitle && newContent) {
+        const response = await fetch(`/api/history/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, title: newTitle, content: newContent })
+        });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    async function deleteHistory(id) {
+      if (confirm('Ви впевнені, що хочете видалити цю історію?')) {
+        const response = await fetch(`/api/history/${id}?userId=${userId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    // UC14-UC16: Управління гітаристами
+    async function loadGuitarists() {
+      const response = await fetch('/api/guitarists');
+      const data = await response.json();
+      const guitaristsList = document.getElementById('guitaristsList');
+      data.guitarists.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.innerHTML = `
+          <h3>${item.name}</h3>
+          <p>${item.bio}</p>
+          <small>Автор: ${item.author.username} | ${new Date(item.createdAt).toLocaleString()}</small>
+          <button onclick="editGuitarist('${item._id}', '${item.name}', '${item.bio}')">Редагувати</button>
+          <button onclick="deleteGuitarist('${item._id}')">Видалити</button>`;
+        guitaristsList.appendChild(div);
+      });
+    }
+
+    document.getElementById('addGuitaristForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('guitaristName').value;
+      const bio = document.getElementById('guitaristBio').value;
+      const response = await fetch('/api/guitarists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, bio, userId })
+      });
+      const result = await response.json();
+      if (result.status === 'success') location.reload();
+      else alert(result.message);
+    });
+
+    async function editGuitarist(id, name, bio) {
+      const newName = prompt('Нове ім’я:', name);
+      const newBio = prompt('Нова біографія:', bio);
+      if (newName && newBio) {
+        const response = await fetch(`/api/guitarists/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, name: newName, bio: newBio })
+        });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    async function deleteGuitarist(id) {
+      if (confirm('Ви впевнені, що хочете видалити цього гітариста?')) {
+        const response = await fetch(`/api/guitarists/${id}?userId=${userId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    // UC18: Управління коментарями
+    async function loadComments() {
+      const newsResponse = await fetch('/api/news');
+      const newsData = await newsResponse.json();
+      const commentsList = document.getElementById('commentsList');
+      for (const news of newsData.news) {
+        const commentsResponse = await fetch(`/api/comments/${news._id}`);
+        const commentsData = await commentsResponse.json();
+        commentsData.comments.forEach(comment => {
+          const div = document.createElement('div');
+          div.className = 'admin-item';
+          div.innerHTML = `
+            <p><strong>${comment.userId.username}</strong> до "${news.title}": ${comment.text}</p>
+            <small>${new Date(comment.createdAt).toLocaleString()}</small>
+            <button onclick="deleteComment('${comment._id}')">Видалити</button>`;
+          commentsList.appendChild(div);
+        });
+      }
+    }
+
+    async function deleteComment(id) {
+      if (confirm('Ви впевнені, що хочете видалити цей коментар?')) {
+        const response = await fetch(`/api/comments/${id}?userId=${userId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.status === 'success') location.reload();
+        else alert(result.message);
+      }
+    }
+
+    // Завантаження всіх даних
+    loadUsers();
+    loadNews();
+    loadHistory();
+    loadGuitarists();
+    loadComments();
+    </script>
+</body>
+</html>

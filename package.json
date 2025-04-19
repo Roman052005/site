@@ -1,0 +1,15 @@
+{
+    "name": "guitar-club",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "@middy/http-json-body-parser": "^6.1.6",
+        "body-parser": "^1.19.0",
+        "express": "^4.17.1",
+        "express-validator": "^7.2.1",
+        "mongoose": "^6.0.0"
+    }
+}

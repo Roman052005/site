@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клуб любителів гітар</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Ласкаво просимо до клубу любителів гітар!</h1>
+        <nav>
+            <a href="news.html">Новини</a> |
+            <a href="history.html">Історія гітар</a> |
+            <a href="guitarists.html">Гітаристи</a> |
+            <a href="login.html" id="loginLink">Вхід</a> |
+            <a href="register.html">Реєстрація</a> |
+            <a href="admin.html" id="adminLink">Адмін-панель</a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Про нас</h2>
+            <p>Це спільнота для всіх, хто захоплюється гітарами, їхньою історією та музикою.</p>
+        </section>
+    </main>
+    <footer>
+        <p>© 2025 Клуб любителів гітар. Усі права захищено.</p>
+    </footer>
+    <script src="js/script.js"></script>
+    <script>
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+    if (userId) {
+      document.getElementById('loginLink').innerHTML = `Вітаємо, ${username} | <a href="#" onclick="logout()">Вихід</a>`;
+      document.getElementById('adminLink').style.display = localStorage.getItem('role') === 'admin' ? 'inline' : 'none';
+    }
+    </script>
+</body>
+</html>

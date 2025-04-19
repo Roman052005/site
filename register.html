@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Реєстрація</h1>
+        <nav>
+            <a href="index.html">Головна</a> |
+            <a href="news.html">Новини</a> |
+            <a href="history.html">Історія гітар</a> |
+            <a href="guitarists.html">Гітаристи</a> |
+            <a href="login.html">Вхід</a>
+        </nav>
+    </header>
+    <main>
+        <form id="registerForm" class="auth-form">
+            <label for="username">Ім'я користувача:</label>
+            <input type="text" id="username" placeholder="Ваше ім'я" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Ваш email" required>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" placeholder="Ваш пароль" required>
+            <button type="submit">Зареєструватися</button>
+        </form>
+    </main>
+    <script src="js/script.js"></script>
+    <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          localStorage.setItem('userId', result.userId);
+          alert(result.message);
+          window.location.href = 'login.html';
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        alert('Помилка: ' + error.message);
+      }
+    });
+    </script>
+</body>
+</html>
